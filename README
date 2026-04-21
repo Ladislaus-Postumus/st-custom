@@ -2,6 +2,9 @@ st - simple terminal
 --------------------
 st is a simple terminal emulator for X which sucks less.
 
+This is my fork of st containing my preferred patches and settings.
+For more information check out st.suckless.org
+
 
 Requirements
 ------------
