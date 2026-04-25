@@ -1,7 +1,8 @@
-*.o
 *.a
-*.so
+*.o
 *.orig
 *.rej
-st
+*.so
+config.h
 patches/
+st
