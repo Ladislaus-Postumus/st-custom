@@ -1,0 +1,55 @@
+name: Check Upstream Updates
+
+on:
+  schedule:
+    - cron: '0 3 * * 1' # Every Monday at 03:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Create Rebase PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git remote add upstream https://git.suckless.org/st
+          git fetch upstream master
+
+          HASH_BEFORE=$(git rev-parse HEAD)
+
+          # Create a temporary sync branch from your current master
+          git checkout -b upstream-sync
+
+          # Attempt rebase
+          if git rebase upstream/master; then
+            HASH_AFTER=$(git rev-parse HEAD)
+
+            if [ "$HASH_BEFORE" = "$HASH_AFTER" ]; then
+              echo "no new upstream changes. already up to date"
+              exit 0
+            fi
+
+            git push origin upstream-sync --force
+            gh pr create \
+              --title "Upstream Sync: $(date +'%Y-%m-%d')" \
+              --body "Clean rebase onto Suckless upstream/master available." \
+              --base master \
+              --head upstream-sync
+          else
+            echo "Rebase conflict detected. Aborting."
+            git rebase --abort
+            exit 1
+          fi
