@@ -3,6 +3,8 @@
 *.orig
 *.rej
 *.so
+.direnv/
+.clang-format
 config.h
 patches/
 st
